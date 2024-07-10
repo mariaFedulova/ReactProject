@@ -1,16 +1,35 @@
 import React, { useState, useEffect, useRef } from "react";
+import { faker } from '@faker-js/faker';
 import MessageList from "./MessageList";
 import SendForm from "./SendForm";
-import '../../css/ChatView.css'
+import './ChatView.css';
 
-function ChatView() {
+const AUTHORS = {
+    me: "Maria"
+}
+const botAnswer = "Ok";
+
+function createRandomMessage(author) {
+    return {
+        text: faker.lorem.words(Math.floor(Math.random() * 5) + 1),
+        author: author
+    }
+}
+
+function generateMessages(user) {
+    const count = Math.floor(Math.random() * 5) + 1;
+    const array = [];
+    for (let i = 0; i < count; i++) {
+        let author = i % 2 === 0 ? AUTHORS.me : user;
+        array.push(createRandomMessage(author));
+    }
+    return array;
+}
+
+function ChatView(props) {
     const [messageList, setMessageList] = useState([]);
     const [value, setValue] = useState('');
     let sendFormRef = useRef(null);
-
-    const user1 = "Maria";
-    const bot = "Bot";
-    const botAnswer = "Ok";
 
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -19,20 +38,24 @@ function ChatView() {
     const sendMessage = () => {
         setMessageList([
             ...messageList,
-            { text: value, author: user1 }
+            { text: value, author: AUTHORS.me }
         ]);
         setValue('');
-        console.log(sendFormRef.current.children[0].children[0]);
         sendFormRef.current.children[0].children[0].focus();
     }
 
     useEffect(() => {
+        setMessageList(generateMessages(props.user))
+    }, [])
+
+
+    useEffect(() => {
         if (messageList.length !== 0) {
-            if (messageList.at(-1).author !== 'Bot') {
+            if (messageList.at(-1).author !== props.user) {
                 const timeoutId = setTimeout(() => {
                     setMessageList([
                         ...messageList,
-                        { text: botAnswer, author: bot }
+                        { text: botAnswer, author: props.user }
                     ]);
                 }, 1500);
 
